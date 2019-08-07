@@ -1,11 +1,13 @@
-##Current Functions:
+## Current Functions:
 
-##is_harmless(mon): returns true if harmless (plant, etc.)
-##detect_monster_radius(rad, option): Find all monsters at an exact radius, option always "single"
-##                                    for now
-##detect_monsters(): wrapper for detect_monster_radius
-##find_closest_monster(): returns the x and y coordinate of the closest monster, using
+## is_harmless(mon): returns true if harmless (plant, etc.)
+## detect_monster_radius(rad, option): Find all monsters at an exact radius, option always "single"
+##                                     for now
+## detect_monsters(): wrapper for detect_monster_radius
+## find_closest_monster(): returns the x and y coordinate of the closest monster, using
+
 <
+
 function find(patterns, text)
     local begin, final
     for i, pattern in ipairs(patterns) do
@@ -30,6 +32,7 @@ end
 --find all monsters at an exact radius
 --options:
 --  "single": returns the coordinate of one monster at this radius, if it exists
+-- "all": sorts monsters in easy, hard, and nasty at given radius
 function detect_monster_radius(rad, option)
   local neg_rad = -1 * rad
   local close_monster
@@ -138,4 +141,3 @@ function detect_danger()
   return danger
 end
 >
-:list_of_harmless = {"plant", "bush", "fungus"}

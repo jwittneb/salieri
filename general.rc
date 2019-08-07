@@ -3,7 +3,7 @@
 # Generic Functions           #
 ###############################
 
-{
+<
 --sends input string as keys to Crawl, I wish I knew why three EoT chars were needed
 function magic(command)
   crawl.process_keys(command .. string.char(27) .. string.char(27) .. string.char(27) .. string.char(27))
@@ -55,4 +55,4 @@ function find(patterns, text)
     end
     return -1, -1
 end
-}
+>
