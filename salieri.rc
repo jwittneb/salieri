@@ -1,0 +1,239 @@
+Current status (for v0.23):
+########################
+# Current Capabilities #
+########################
+# autotravel around and kill things
+# does not attack harmless plants
+# go down stairs once floor is complete
+# will eat permafood when very hungry
+# Rest when low on hp
+# deal with stat increases/level up
+# Berserking as an option
+
+###################
+# Next Objectives #
+###################
+# will eat enemy corpses if hungry
+# Dealing with Water between char and enemies
+# Equipment
+# Really dumb fleeing
+# Change fleeing to actually be intelligent
+# Deal with invisible enemies
+# Deal with status effects (confusion, etc.)
+# Only Berserk when next to enemy
+# other god abilities
+# dealing with shops
+# better fleeing
+# Focus on important enemies (ie. orc priests)
+# Make it so we do attack dangerous plants (oklob plants)
+# Deal with no permafood scenario
+ 
+#Ongoing:
+# basic monster difficulty (orc priests)Ongoing:
+# basic monster difficulty (orc priests)
+
+show_more = false
+autofight_stop = 0
+pizza = pineapple
+
+#auto-select MiBe (maybe switch later)
+weapon += hand axe
+species += Mi
+background += Be
+
+#Only pick up food and money until further implementation
+autopickup = %$
+autopickup_exceptions += <rotten
+
+#only stop autotravel on sight of stairs right now, not on items
+explore_stop = stairs,items
+
+###############################
+# Generic Functions           #
+###############################
+
+{
+--sends input string as keys to Crawl, I wish I knew why three EoT chars were needed
+function magic(command)
+  crawl.process_keys(command .. string.char(27) .. string.char(27) .. string.char(27) .. string.char(27))
+end
+
+function find_min(arr)
+    local min = arr[1]
+    for i = 2, length(arr) do
+      if (arr[i] < min) then
+        min = arr[i]
+      end
+    end
+    return min
+end
+
+function max(a, b)
+    if (a > b) then
+      return a
+    else
+      return b
+    end
+end
+
+function sign(a)
+    if (a > 0) then
+      return 1
+    elseif (a < 0) then
+      return -1
+    else
+      return 0
+    end
+end
+
+function length(arr)
+    local size = 0
+    for index, value in ipairs(arr) do
+      size = size + 1
+    end
+    return size
+end
+
+function find(patterns, text)
+    local begin, final
+    for i, pattern in ipairs(patterns) do
+      begin, final = string.find(text, (pattern))
+      if begin ~= nil then
+        return begin, final
+      end
+    end
+    return -1, -1
+end
+}
+#####################################
+# Determining Situation Functions   #
+#####################################
+
+# situation.rc functions:
+# is_harmless(mon): returns true if harmless (plant, etc.)
+# detect_monster_radius(rad, option): Find all monsters at an exact radius, option always "single" for now
+# detect_monsters(): wrapper for detect_monster_radius
+# find_closest_monster(): returns the x and y coordinate of the closest monster, using detect_mmonster_radius()
+include = situation.rc
+
+----------------------
+-- Moving Functions --
+----------------------
+{
+function autotravel()
+  magic("o")
+end
+
+function autoattack()
+  magic("\t")
+end
+
+function descend()
+  magic("G>")
+end
+
+function eat_permafood()
+  local this_item
+  local i, a, b
+  for i = 0, 51 do
+    this_item = items.inslot(i)
+    if (this_item ~= nil) then
+      a, b = find(list_of_permafood,this_item:name())
+      if (a ~= -1) then
+        magic("e" .. items.index_to_letter(i))
+        return 0
+      end
+    end
+  end
+  crawl.mpr("No permafood, this is a problem")
+  return 1
+end
+
+function eat()
+  eat_permafood()
+end
+
+function rest()
+  magic("s")
+end
+
+
+-------------------
+-- Main Function --
+-------------------
+
+--hunger: 4 = satiated
+--        3 = hungry
+--        2 = very hungry
+--        1 = near starving
+--        0 = starving
+
+function choose_stat_gain()
+  return "s"
+end
+
+--This is the function which runs automatically at the start of the turn by Crawl.
+--Determines the state of the game, and executes the appropriate action
+function ready()
+  local x,y = detect_monsters()
+  local hung = you.hunger()
+  local cur_danger = detect_danger()
+  local chp, mhp = you.hp()
+  local berserk = you.berserk()
+  
+  crawl.more_autoclear(1)
+  if (prev_turn == you.turns()) then
+    --crap, we failed to do anything this turn... Hopefully because the floor is done
+    non_moves = non_moves + 1
+    crawl.mpr(tostring(non_moves))
+  else
+    non_moves = 0
+  end
+  if (non_moves > 20) then
+    cur_goal = "descend"
+    descend()
+    non_moves = 0
+  else
+    if (hung == 0) then
+      cur_goal = "eat"
+      eat()
+    else
+      if (x ~= 0 or y ~= 0) then
+        cur_goal = "fight"
+        crawl.mpr(tostring(cur_danger))
+        if ((cur_danger > danger_limit) and (berserk == false)) then
+            magic("aa")
+        end
+        autoattack()
+        --eventually change this to retreat/fight
+      else
+        if (hung <= 2) then
+          cur_goal = "eat"
+          eat()
+        else
+          if ((berserk) or (chp < 0.9*mhp) or (you.exhausted())) then
+            rest()  
+          else
+            autotravel()
+          end
+        end
+      end
+    end
+  end
+  prev_turn = you.turns()
+end
+}
+
+######################################
+# Initialization of important fields #
+######################################
+
+:cur_goal = "explore"
+:non_moves = 0
+:prev_danger = 0
+:prev_turn = -1
+:list_of_permafood = {"fruit", "jelly", "pizza", "jerky", "sausage","ration"}
+:list_of_harmless = {"plant", "bush", "fungus"}
+:list_of_dangerous = {"orc warrior", "orc priest"}
+:danger_limit = 2
+:initialized = 0
