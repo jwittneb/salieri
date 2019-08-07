@@ -1,0 +1,58 @@
+
+###############################
+# Generic Functions           #
+###############################
+
+{
+--sends input string as keys to Crawl, I wish I knew why three EoT chars were needed
+function magic(command)
+  crawl.process_keys(command .. string.char(27) .. string.char(27) .. string.char(27) .. string.char(27))
+end
+
+function find_min(arr)
+    local min = arr[1]
+    for i = 2, length(arr) do
+      if (arr[i] < min) then
+        min = arr[i]
+      end
+    end
+    return min
+end
+
+function max(a, b)
+    if (a > b) then
+      return a
+    else
+      return b
+    end
+end
+
+function sign(a)
+    if (a > 0) then
+      return 1
+    elseif (a < 0) then
+      return -1
+    else
+      return 0
+    end
+end
+
+function length(arr)
+    local size = 0
+    for index, value in ipairs(arr) do
+      size = size + 1
+    end
+    return size
+end
+
+function find(patterns, text)
+    local begin, final
+    for i, pattern in ipairs(patterns) do
+      begin, final = string.find(text, (pattern))
+      if begin ~= nil then
+        return begin, final
+      end
+    end
+    return -1, -1
+end
+}

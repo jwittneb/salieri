@@ -1,0 +1,141 @@
+##Current Functions:
+
+##is_harmless(mon): returns true if harmless (plant, etc.)
+##detect_monster_radius(rad, option): Find all monsters at an exact radius, option always "single"
+##                                    for now
+##detect_monsters(): wrapper for detect_monster_radius
+##find_closest_monster(): returns the x and y coordinate of the closest monster, using
+<
+function find(patterns, text)
+    local begin, final
+    for i, pattern in ipairs(patterns) do
+      begin, final = string.find(text, (pattern))
+      if begin ~= nil then
+        return begin, final
+      end
+    end
+    return -1, -1
+end
+
+function is_harmless(mon)
+  local pos1, pos2
+  pos1, pos2 = find(list_of_harmless, mon:name())
+  if (pos1 == -1) then
+    return false
+  else
+    return true
+  end
+end
+
+--find all monsters at an exact radius
+--options:
+--  "single": returns the coordinate of one monster at this radius, if it exists
+function detect_monster_radius(rad, option)
+  local neg_rad = -1 * rad
+  local close_monster
+  local easy = {}
+  local hard = {}
+  local nasty = {}
+  for x = 0, 2*rad do
+    close_monster = monster.get_monster_at(neg_rad + x, rad)
+    if close_monster then
+      if (not is_harmless(close_monster)) then
+        if (option == "single") then
+          return neg_rad + x, rad
+        elseif (close_monster:threat() == 1) then
+          table.insert(easy, close_monster)
+        elseif (close_monster:threat() == 2) then
+          table.insert(hard, close_monster)
+        elseif (close_monster:threat() == 3) then
+          table.insert(nasty, close_monster)
+        end
+      end
+    end
+  end
+  for x = 0, 2*rad do
+    close_monster = monster.get_monster_at(neg_rad + x, neg_rad)
+    if close_monster then
+      if (not is_harmless(close_monster)) then
+        if (option == "single") then
+          return neg_rad + x, neg_rad
+        elseif (close_monster:threat() == 1) then
+          table.insert(easy, close_monster)
+        elseif (close_monster:threat() == 2) then
+          table.insert(hard, close_monster)
+        elseif (close_monster:threat() == 3) then
+          table.insert(nasty, close_monster)
+        end
+      end
+    end
+  end
+  for x = 1, 2*rad - 1 do
+    close_monster = monster.get_monster_at(neg_rad, neg_rad + x)
+    if close_monster then
+      if (not is_harmless(close_monster)) then
+        if (option == "single") then
+          return neg_rad, neg_rad+x
+        elseif (close_monster:threat() == 1) then
+          table.insert(easy, close_monster)
+        elseif (close_monster:threat() == 2) then
+          table.insert(hard, close_monster)
+        elseif (close_monster:threat() == 3) then
+          table.insert(nasty, close_monster)
+        end
+      end
+    end
+  end
+  for x = 1, 2*rad - 1 do
+    close_monster = monster.get_monster_at(rad, neg_rad + x)
+    if close_monster then
+      if (not is_harmless(close_monster)) then
+        if (option == "single") then
+          return rad, neg_rad+x
+        elseif (close_monster:threat() == 1) then
+          table.insert(easy, close_monster)
+        elseif (close_monster:threat() == 2) then
+          table.insert(hard, close_monster)
+        elseif (close_monster:threat() == 3) then
+          table.insert(nasty, close_monster)
+        end
+      end
+    end
+  end
+  if (option == "single") then
+    return 0, 0
+  else
+    return nasty, hard, easy
+  end
+end
+
+function find_closest_monster()
+  local radius
+  local x, y
+  x = 0
+  y = 0
+  for radius = 1, 7 do
+    x, y = detect_monster_radius(radius, "single")
+    if (x ~= 0 or y ~= 0) then
+      return x, y
+    end
+  end
+  return 0, 0
+end
+
+--Make this smarter
+function detect_monsters()
+  return find_closest_monster()
+end
+
+function detect_danger()
+  local danger = 0
+  for radius = 1, 7 do
+    x,y,z = detect_monster_radius(radius, "all")
+    danger = danger + table.getn(x)*4
+    danger = danger + table.getn(y)*2
+    danger = danger + table.getn(z)
+  end
+  crawl.mpr(tostring(danger))
+  return danger
+end
+>
+:list_of_harmless = {"plant", "bush", "fungus"}
