@@ -50,7 +50,7 @@ explore_stop = stairs,items
 # Generic Functions           #
 ###############################
 
-include = generic.rc
+include = general.rc
 
 #####################################
 # Determining Situation Functions   #
