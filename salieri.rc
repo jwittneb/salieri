@@ -141,7 +141,7 @@ end
 --Determines the state of the game, and executes the appropriate action
 function ready()
   local monx, mony = detect_monsters()
-  detect_items()
+  local floorItems = detect_items()
   local hung = you.hunger()
   local cur_danger = detect_danger()
   local chp, mhp = you.hp()
@@ -179,6 +179,9 @@ function ready()
   elseif ((berserk) or (chp < 0.9*mhp) or (you.exhausted())) then
     cur_goal = "rest"
     rest()  
+  elseif floorItems then
+  --change this
+    autotravel()
   else
     autotravel()
   end
