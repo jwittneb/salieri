@@ -74,6 +74,12 @@ include = general.rc
 
 include = situation.rc
 
+####################################
+# Equipment Functions              #
+####################################
+
+include = equip.rc
+
 ----------------------
 -- Moving Functions --
 ----------------------
@@ -135,12 +141,12 @@ end
 --Determines the state of the game, and executes the appropriate action
 function ready()
   local monx, mony = detect_monsters()
-  local itemx, itemy, val = detect_items()
+  detect_items()
   local hung = you.hunger()
   local cur_danger = detect_danger()
   local chp, mhp = you.hp()
   local berserk = you.berserk()
- 
+
   crawl.more_autoclear(1)
   crawl.more_autoclear(1)
 

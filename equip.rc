@@ -1,0 +1,32 @@
+<
+
+weaponTable = {}
+
+weaponTable[0] = "hand axe"
+weaponTable[1] = "war axe"
+weaponTable[2] = "club"
+weaponTable[3] = "dagger"
+
+function detect_items()
+  local floor = {}
+  for x = 1, 15 do 
+    for y = 1, 15 do
+      temp = items.get_items_at(x-8,y-8) 
+      if (temp ~= nil) then
+--        for i, v in pairs(weaponTable) do
+--          crawl.mpr(tostring(v))
+--        end
+        for i, v in pairs(temp) do
+          val1, val2 = find(weaponTable, v.name())
+          if ((val1 ~= -1) or (val2 ~= -1)) then
+            crawl.mpr(tostring(v.name()))
+          end
+        end
+      end
+--      floor = combine(floor, temp)
+    end
+  end
+--  return floor
+end
+
+>

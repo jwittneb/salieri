@@ -55,4 +55,11 @@ function find(patterns, text)
     end
     return -1, -1
 end
+
+function combine(tab1, tab2)
+  for i, v in pairs(tab2) do
+    tab1[i] = v
+  end
+  return tab1
+end
 >
