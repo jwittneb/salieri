@@ -1,5 +1,8 @@
 <
 
+-- equipment slot numbers: 0 - Weapon
+--                         6 - Armor
+
 weaponTable = {}
 
 weaponTable[0] = "hand axe"
@@ -8,7 +11,19 @@ weaponTable[10] = "+0 club"
 weaponTable[3] = "dagger"
 weaponTable["+0 club"] = 10
 
+armorTable = {}
+
+armorTable["Ring Mail"] = 10
+
+-- returns a string to equip the best item in each slot
+function equip_best()
+--  for ind, itm in items.inventory() do
+  crawl.mpr(items.inventory()[2].equip_type)
+end
+
+
 -- Returns a list of all the items on the floor, with entries (xpos, ypos, item)
+-- This function is a little defunct if we autopickup all weapons/armor and then evaluate
 function detect_items()
   local flooritems = {}
   local counter = 1
@@ -23,9 +38,9 @@ function detect_items()
           table.insert(temp, 2, y-8)
           table.insert(temp, 3, v)
           table.insert(flooritems, counter, temp)
-          crawl.mpr(temp[3].name())
-          crawl.mpr(tostring(temp[1]))
-          crawl.mpr(tostring(temp[2]))
+--          crawl.mpr(temp[3].name())
+--          crawl.mpr(tostring(temp[1]))
+--          crawl.mpr(tostring(temp[2]))
           counter = counter + 1
         end
       end
@@ -38,5 +53,22 @@ function detect_items()
     return nil
   end
 end
+
+-- This is pretty stupid right now, mostly for testing purposes
+function find_best_item(items)
+  if items then
+    for ind, val in pairs(items) do
+      if val[3].subtype() then
+        if view.can_reach(val[1], val[2]) then
+          crawl.mpr(val[3].subtype())
+        end
+      else
+        crawl.mpr("REEEEEEE")
+        crawl.mpr(val[3].name())
+      end
+    end
+  end
+end
+
 
 >
