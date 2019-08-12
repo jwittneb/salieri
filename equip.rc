@@ -1,24 +1,85 @@
 <
 
 -- equipment slot numbers: 0 - Weapon
+--                         1 - Cloak
+--                         3 - Gloves
+--                         5 - Shield
 --                         6 - Armor
 
 weaponTable = {}
 
-weaponTable[0] = "hand axe"
+weaponTable["Hand Axe"] = 1
 weaponTable[1] = "war axe"
 weaponTable[10] = "+0 club"
 weaponTable[3] = "dagger"
-weaponTable["+0 club"] = 10
+weaponTable["Club"] = 10
 
 armorTable = {}
 
 armorTable["Ring Mail"] = 10
 
 -- returns a string to equip the best item in each slot
+-- sometimes no action happens, so we have to check
+-- TODO: make this so that it isnt just for MiBe, eventually
 function equip_best()
---  for ind, itm in items.inventory() do
-  crawl.mpr(items.inventory()[2].equip_type)
+  local action = 0
+  for ind, itm in pairs(items.inventory()) do
+    if (itm.equip_type == 0) then
+      if (itm.damage > items.equipped_at(0).damage and itm.weap_skill == "Axes") then
+        itm.wield()
+        action = 1
+      elseif (not itm.equipped) then
+        itm.drop()
+        action = 1
+      end
+    elseif (itm.equip_type == 1) then
+      if (items.equipped_at(1) == nil) then
+        itm.wear()
+        action = 1
+      elseif (not itm.equipped) then
+        itm.drop()
+        action = 1
+      end
+    elseif (itm.equip_type == 2) then
+      if (itm.ac > items.equipped_at(2).ac) then
+        itm.wear()
+        action = 1
+      elseif (not itm.equipped) then
+        itm.drop()
+        action = 1
+      end
+    elseif (itm.equip_type == 3) then
+      if (items.equipped_at(3) == nil) then
+        itm.wear()
+        action = 1
+      elseif (not itm.equipped) then
+        itm.drop()
+        action = 1
+      end
+    elseif (itm.equip_type == 6) then
+      if (itm.ac > items.equipped_at(6).ac) then
+        itm.wear()
+        action = 1
+      elseif (not itm.equipped) then
+        itm.drop()
+        action = 1
+      end
+    elseif (itm.equip_type == 7) then
+      if (items.equipped_at(7) == nil) then
+        crawl.mpr(itm.equip_type)
+        debug_mode = 1
+        itm.wear()
+        action = 1
+      end
+    end
+  end
+  if (action == 0) then
+    -- TODO: no inventory management was necessary, this is a simple hack to continue the script
+    autotravel()
+  end
+--  crawl.mpr(items.equipped_at(0).name())
+--  for ind, itm in items.inventory() do 
+--  crawl.mpr(items.inventory()[2].equip_type)
 end
 
 

@@ -4,9 +4,9 @@
 ###############################
 
 <
---sends input string as keys to Crawl, I wish I knew why three EoT chars were needed
+--sends input string as keys to Crawl, I wish I knew why EoT chars were needed
 function magic(command)
-  crawl.process_keys(command .. string.char(27) .. string.char(27) .. string.char(27) .. string.char(27))
+  crawl.process_keys(command .. string.char(27))
 end
 
 function find_min(arr)
