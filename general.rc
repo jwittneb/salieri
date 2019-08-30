@@ -6,7 +6,8 @@
 <
 --sends input string as keys to Crawl, I wish I knew why EoT chars were needed
 function magic(command)
-  crawl.process_keys(command .. string.char(27))
+  crawl.sendkeys(command)
+--  crawl.process_keys(command .. string.char(27))
 end
 
 function find_min(arr)

@@ -9,26 +9,33 @@
 # Rest when low on hp
 # deal with stat increases/level up
 # Berserking as an option
+# equipment
 
 ###################
 # Next Objectives #
 ###################
-# Equipment
-# Cursed Equipment
-# Really dumb fleeing
-# Change fleeing to actually be intelligent
+# Really dumb fleeing (idea: waypoint + teleport, or find chokepoint)
+# Only Berserk when next to enemy
+# Deal with no permafood scenario
 # Dealing with Water between char and enemies
 # Deal with invisible enemies
 # Deal with status effects (confusion, etc.)
-# Only Berserk when next to enemy
+# Cursed Equipment
 # other god abilities
 # dealing with shops
 # better fleeing
 # Focus on important enemies (ie. orc priests)
 # Make it so we do attack dangerous plants (oklob plants)
-# Deal with no permafood scenario
+# Change fleeing to actually be intelligent
 
 # ongoing: equipment
+channel = mute
+
+channel.examine_filter = mute
+channel.error = mute
+channel.diagnostic = mute
+# channel.plain = mute
+channel.floor = mute
 
 show_more = false
 autofight_stop = 0
@@ -42,7 +49,7 @@ background += Be
 # it is easier to auto-pickup everything and evaluate it in the inventory rather than
 # evaluate it's value on the ground. This might change as inventory management becomes 
 # a problem
-autopickup = $?!:/%|\[)
+autopickup = $?!:/%|\[)=
 autopickup_exceptions += <rotten
 
 #only stop autotravel on sight of stairs and items right now
@@ -95,7 +102,6 @@ include = equip.rc
 {
 
 function autotravel()
-  crawl.mpr(you.branch())
   magic("o")
 end
 
@@ -156,15 +162,17 @@ function ready()
   local cur_danger = detect_danger()
   local chp, mhp = you.hp()
   local berserk = you.berserk()
+  local test = find_chokepoints()
 
   crawl.more_autoclear(1)
 
-  if (cur_goal == "debug") then
-    if (berserk) then
-      cur_goal = "explore"
-    end
-  else
+--  if (totturns >= 20) then
+--    cur_goal = "debug"
+--  end
 
+  if (cur_goal == "debug") then
+    cur_goal = "debug"
+  else
     if (prev_turn == you.turns()) then
       --crap, we failed to do anything this turn... Hopefully because the floor is done
       non_moves = non_moves + 1
@@ -173,7 +181,7 @@ function ready()
       non_moves = 0
     end
 
-    if (non_moves > 20) then
+    if (non_moves > 5) then
       cur_goal = "descend"
       descend()
       non_moves = 0
@@ -206,6 +214,7 @@ function ready()
   end
   prev_turn = you.turns()
   crawl.mpr(cur_goal)
+
 end
 }
 

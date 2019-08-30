@@ -42,6 +42,8 @@ function detect_monster_radius(rad, option)
   for x = 0, 2*rad do
     close_monster = monster.get_monster_at(neg_rad + x, rad)
     if close_monster then
+      assert(close_monster:speed_description())
+      crawl.mpr(close_monster:speed_description(), 1)
       if (not is_harmless(close_monster)) then
         if (option == "single") then
           return neg_rad + x, rad
@@ -124,6 +126,7 @@ function find_closest_monster()
   return 0, 0
 end
 
+-- TODO: this function is called like 3 times per turn, stop this
 --Make this smarter
 function detect_monsters()
   return find_closest_monster()
@@ -139,5 +142,27 @@ function detect_danger()
   end
   crawl.mpr(tostring(danger))
   return danger
+end
+
+-- returns -1 if no chokepoint can be found
+-- looks for pattern, where X = wall, . = space
+function find_chokepoints()
+  for x = -7, 7 do
+    for y = -7, 7 do
+      if (view.feature_at(x,y)) then
+        crawl.mpr(view.feature_at(x,y))
+      end
+    end
+  end
+end
+
+-- XX
+-- ..
+-- XX
+function find_safe_chokepoint()
+  local x, y
+  -- figure out what direction the danger is in, that
+  -- way we can look for chokepoints in a safer direction
+  x,y = detect_monsters()
 end
 >

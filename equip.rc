@@ -2,32 +2,38 @@
 
 -- equipment slot numbers: 0 - Weapon
 --                         1 - Cloak
+--                         2 - Helm
 --                         3 - Gloves
+--                         4 - Boots
 --                         5 - Shield
 --                         6 - Armor
 
-weaponTable = {}
-
-weaponTable["Hand Axe"] = 1
-weaponTable[1] = "war axe"
-weaponTable[10] = "+0 club"
-weaponTable[3] = "dagger"
-weaponTable["Club"] = 10
-
-armorTable = {}
-
-armorTable["Ring Mail"] = 10
-
--- returns a string to equip the best item in each slot
+-- if the best equipment isnt being worn, puts it on
+-- also drops useless equipment, maybe make this a separate function
 -- sometimes no action happens, so we have to check
 -- TODO: make this so that it isnt just for MiBe, eventually
 function equip_best()
   local action = 0
   for ind, itm in pairs(items.inventory()) do
     if (itm.equip_type == 0) then
-      if (itm.damage > items.equipped_at(0).damage and itm.weap_skill == "Axes") then
-        itm.wield()
-        action = 1
+      if (itm.weap_skill == "Axes") then
+          if (itm.damage > items.equipped_at(0).damage) then
+            itm.wield()
+            action = 1
+          elseif ((not itm.equipped) and (itm.damage == items.equipped_at(0).damage)) then
+            if (not itm.fully_identified) then
+              itm.wield()
+              action = 1
+            elseif (itm.plus > items.equipped_at(0).plus) then
+              itm.wield()
+              action = 1
+            else
+              itm.drop()
+              action = 1
+            end
+          else
+            itm.drop()
+          end
       elseif (not itm.equipped) then
         itm.drop()
         action = 1
@@ -40,16 +46,16 @@ function equip_best()
         itm.drop()
         action = 1
       end
-    elseif (itm.equip_type == 2) then
-      if (itm.ac > items.equipped_at(2).ac) then
+    elseif (itm.equip_type == 3) then
+      if (items.equipped_at(3) == nil) then
         itm.wear()
         action = 1
       elseif (not itm.equipped) then
         itm.drop()
         action = 1
       end
-    elseif (itm.equip_type == 3) then
-      if (items.equipped_at(3) == nil) then
+    elseif (itm.equip_type == 4) then
+      if (items.equipped_at(4) == nil) then
         itm.wear()
         action = 1
       elseif (not itm.equipped) then
