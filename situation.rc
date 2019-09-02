@@ -151,27 +151,39 @@ end
 
 -- could be made more efficient 
 -- returns -1 if no chokepoint can be found
--- looks for pattern, where X = wall, . = space
+-- looks for patterns, where X = wall, . = traversable space
 -- XX
 -- ..
 -- XX
+--
+-- X.X
+-- X.X
 function find_nearby_chokepoints()
-  -- looking for patterns where the chokepoint leaves vertically  
   for x = -7, 5 do
-    for y = -7, 6 do      
+    for y = -7, 5 do      
+      -- Take all 3x3 grids (minus bottom-right block) to find vert/horiz chokepoints
+      -- We miss chokepoints that are exactly in the bottom-right corner doing this, 
+      -- this can be easily fixed, but not a priority
       x1y1 = view.feature_at(x,y)
       x2y1 = view.feature_at(x+1,y)
       x3y1 = view.feature_at(x+2,y)
       x1y2 = view.feature_at(x,y+1)
       x2y2 = view.feature_at(x+1,y+1)
       x3y2 = view.feature_at(x+2,y+1)
+      x1y3 = view.feature_at(x,y+2)
+      x2y3 = view.feature_at(x+1,y+2)
+
+      -- vertical chokepoint
       if (is_wall(x1y1) and is_wall(x1y2) and is_wall(x3y1) and is_wall(x3y2) and travel.feature_traversable(x2y1) and travel.feature_traversable(x2y2)) then
-        crawl.mpr(tostring(x) .. "," .. tostring(y))
+        crawl.mpr("vertical: " .. tostring(x) .. "," .. tostring(y))
+      end
+
+      -- horizontal chokepoint
+      if (is_wall(x1y1) and is_wall(x2y1) and is_wall(x1y3) and is_wall(x2y3) and travel.feature_traversable(x1y2) and travel.feature_traversable(x2y2)) then
+        crawl.mpr("horizontal: " .. tostring(x) .. "," .. tostring(y))
       end
     end
   end
-
-  -- looking for patterns where the chokepoint leaves horizontally
 end
 
 -- This functions is still dumb because it would recognize deep water as part of a chokepoint
@@ -181,5 +193,23 @@ function find_optimal_chokepoint()
   -- figure out what direction the danger is in, that
   -- way we can look for chokepoints in a safer direction
   x,y = detect_monsters()
+  chokepoints = find_nearby_chokepoints
+
+  -- no nearby chokepoints
+  if (chokepoints == -1) then
+    return -1
+  end
+
+  for i,v in ipairs(chokepoints) do
+    --if the direction of the chokepoint is opposite that of
+    --the enemies we are good. Maybe make this smarter so that
+    --it returns the closest one as well.
+    if (v[1]*x < 0 and v[2]*y < 0) then
+        return v
+    end
+  end
+
+  --no suitable chokepoints
+  return -2
 end
 >
