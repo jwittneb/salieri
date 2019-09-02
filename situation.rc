@@ -144,22 +144,39 @@ function detect_danger()
   return danger
 end
 
--- returns -1 if no chokepoint can be found
--- looks for pattern, where X = wall, . = space
-function find_chokepoints()
-  for x = -7, 7 do
-    for y = -7, 7 do
-      if (view.feature_at(x,y)) then
-        crawl.mpr(view.feature_at(x,y))
-      end
-    end
-  end
+-- helper function for chokepoint to make things more readable
+function is_wall(feat)
+  return ((not travel.feature_traversable(feat)) and (feat ~= "unseen"))
 end
 
+-- could be made more efficient 
+-- returns -1 if no chokepoint can be found
+-- looks for pattern, where X = wall, . = space
 -- XX
 -- ..
 -- XX
-function find_safe_chokepoint()
+function find_nearby_chokepoints()
+  -- looking for patterns where the chokepoint leaves vertically  
+  for x = -7, 5 do
+    for y = -7, 6 do      
+      x1y1 = view.feature_at(x,y)
+      x2y1 = view.feature_at(x+1,y)
+      x3y1 = view.feature_at(x+2,y)
+      x1y2 = view.feature_at(x,y+1)
+      x2y2 = view.feature_at(x+1,y+1)
+      x3y2 = view.feature_at(x+2,y+1)
+      if (is_wall(x1y1) and is_wall(x1y2) and is_wall(x3y1) and is_wall(x3y2) and travel.feature_traversable(x2y1) and travel.feature_traversable(x2y2)) then
+        crawl.mpr(tostring(x) .. "," .. tostring(y))
+      end
+    end
+  end
+
+  -- looking for patterns where the chokepoint leaves horizontally
+end
+
+-- This functions is still dumb because it would recognize deep water as part of a chokepoint
+-- even against monsters that can swim (i.e. hydra, crocs)
+function find_optimal_chokepoint()
   local x, y
   -- figure out what direction the danger is in, that
   -- way we can look for chokepoints in a safer direction

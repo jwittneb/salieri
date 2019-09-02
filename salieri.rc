@@ -29,7 +29,6 @@
 # Change fleeing to actually be intelligent
 
 # ongoing: equipment
-channel = mute
 
 channel.examine_filter = mute
 channel.error = mute
@@ -162,13 +161,13 @@ function ready()
   local cur_danger = detect_danger()
   local chp, mhp = you.hp()
   local berserk = you.berserk()
-  local test = find_chokepoints()
+  local test = find_nearby_chokepoints()
 
   crawl.more_autoclear(1)
 
---  if (totturns >= 20) then
---    cur_goal = "debug"
---  end
+  if (totturns >= 20) then
+    cur_goal = "debug"
+  end
 
   if (cur_goal == "debug") then
     cur_goal = "debug"
@@ -214,6 +213,7 @@ function ready()
   end
   prev_turn = you.turns()
   crawl.mpr(cur_goal)
+  totturns = totturns + 1
 
 end
 }
@@ -222,6 +222,7 @@ end
 # Initialization of important fields #
 ######################################
 
+:totturns = 0
 :cur_goal = "explore"
 :non_moves = 0
 :prev_danger = 0
