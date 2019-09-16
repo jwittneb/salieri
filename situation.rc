@@ -158,7 +158,10 @@ end
 --
 -- X.X
 -- X.X
+
 function find_nearby_chokepoints()
+  horizontal = {}
+  vertical = {}
   for x = -7, 5 do
     for y = -7, 5 do      
       -- Take all 3x3 grids (minus bottom-right block) to find vert/horiz chokepoints
@@ -175,16 +178,77 @@ function find_nearby_chokepoints()
 
       -- vertical chokepoint
       if (is_wall(x1y1) and is_wall(x1y2) and is_wall(x3y1) and is_wall(x3y2) and travel.feature_traversable(x2y1) and travel.feature_traversable(x2y2)) then
+        table.insert(vertical, {x,y})
         crawl.mpr("vertical: " .. tostring(x) .. "," .. tostring(y))
       end
 
       -- horizontal chokepoint
       if (is_wall(x1y1) and is_wall(x2y1) and is_wall(x1y3) and is_wall(x2y3) and travel.feature_traversable(x1y2) and travel.feature_traversable(x2y2)) then
+        table.insert(horizontal, {x,y})
         crawl.mpr("horizontal: " .. tostring(x) .. "," .. tostring(y))
       end
     end
   end
 end
+
+-- NW N NE
+--  W @ E
+-- SW S SE
+
+-- Returns 1,2, or 3, if we are currently in a chokepoint, depending on what point of a chokepoint
+-- we are in. Opening above/left returns 1, opening below/right returns 3, chokepoint on both sides
+-- returns 2.
+-- Returns 0 if we are not in a chokepoint
+
+function curr_chokepoint_pos()
+  north = 0
+  south = 0
+  west = 0
+  east = 0
+
+  NW = view.feature_at(-1,-1)
+  N = view.feature_at(0,-1)
+  NE = view.feature_at(1,-1)
+  W = view.feature_at(-1,0)
+  E = view.feature_at(1,0)
+  SW = view.feature_at(-1,1)
+  S = view.feature_at(0,1)
+  SE = view.feature_at(1,1)
+
+  if (is_wall(NW) and is_wall(NE) and is_wall(W) and is_wall(E)) then
+    north = 1
+  end
+  if (is_wall(W) and is_wall(E) and is_wall(SW) and is_wall(SE)) then
+    south = 1
+  end
+  if ((north == 1) and (south == 1)) then
+    crawl.mpr(tostring(is_wall(W)))
+    crawl.mpr("north and south")
+    return 2
+  elseif (north == 1) then
+    return 3
+  elseif (south == 1) then
+    return 1
+  end
+
+  if (is_wall(NW) and is_wall(N) and is_wall(SW) and is_wall(S)) then
+    west = 1
+  end
+  if (is_wall(NE) and is_wall(N) and is_wall(S) and is_wall(SE)) then
+    east = 1
+  end
+  if ((west == 1) and (east == 1)) then
+    crawl.mpr("west and east")
+    return 2
+  elseif (west == 1) then
+    return 3
+  elseif (east == 1) then
+    return 1
+  end
+
+  return 0
+end
+
 
 -- This functions is still dumb because it would recognize deep water as part of a chokepoint
 -- even against monsters that can swim (i.e. hydra, crocs)
