@@ -71,6 +71,8 @@ explore_stop += greedy_pickup
 
 include = general.rc
 
+include = path.rc
+
 #####################################
 # Determining Situation Functions   #
 #####################################
@@ -176,6 +178,7 @@ function ready()
   end
 
   if (cur_goal == "debug") then
+    djikstra()
     cur_goal = "debug"
   else
     if (prev_turn == you.turns()) then
@@ -240,5 +243,6 @@ end
 :list_of_dangerous = {"orc warrior", "orc priest"}
 :danger_limit = 2
 :initialized = 0
-
+:grid = {}
+:curr = {0,0}
 

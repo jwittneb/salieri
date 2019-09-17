@@ -1,0 +1,7 @@
+<
+function test123()
+--  reset_grid()
+--  fill_distances()
+  crawl.mpr("k")
+end
+>
