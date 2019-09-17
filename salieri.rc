@@ -71,7 +71,7 @@ explore_stop += greedy_pickup
 
 include = general.rc
 
-include = path.rc
+include = djikstra.rc
 
 #####################################
 # Determining Situation Functions   #
