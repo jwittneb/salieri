@@ -178,7 +178,7 @@ function ready()
   end
 
   if (cur_goal == "debug") then
-    djikstra()
+    djikstra(-4,-4)
     cur_goal = "debug"
   else
     if (prev_turn == you.turns()) then
@@ -234,7 +234,7 @@ end
 ######################################
 
 :totturns = 0
-:cur_goal = "explore"
+:cur_goal = "debug"
 :non_moves = 0
 :prev_danger = 0
 :prev_turn = -1

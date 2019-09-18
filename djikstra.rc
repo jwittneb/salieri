@@ -1,7 +1,105 @@
 <
-function test123()
---  reset_grid()
---  fill_distances()
-  crawl.mpr("k")
+function reset_grid()
+  for len = -6, 6 do
+    grid[len] = {}
+    for wid = -6, 6 do
+        grid[len][wid] = {}
+        grid[len][wid][1] = "unvisited"
+        grid[len][wid][2] = 99
+        grid[len][wid][3] = {0,0}
+    end
+  end
+
+  grid[0][0][1] = "visited"
+  grid[0][0][2] = 0
+  grid[0][0][3] = {0,0}
+  curr = {0,0}
+end
+
+function fill_distances()
+  -- presumably the path will be in a 13x13 grid with us centered, otherwise probably not worth persuing
+  -- this will need to be changed when dealing with retreating towrads stairs
+
+  directions = {{-1,-1},{-1,0},{-1,1},{0,-1},{0,1},{1,-1},{1,0},{1,1}}
+
+  --just loop until we are done, guaranteed to return eventually 
+  for i=1,200 do
+
+    --Update the neighbors of the current node
+    for i, v in ipairs(directions) do
+      if (curr[1] + v[1] >= -6) and (curr[1] + v[1] <= 6) and (curr[2] + v[2] >= -6) and (curr[2] + v[2] <= 6) then
+        feat = view.feature_at(curr[1] + v[1], curr[2] + v[2])
+        if (travel.feature_traversable(feat)) then
+          if ((grid[curr[1] + v[1]][curr[2] + v[2]][2]) > (grid[curr[1]][curr[2]][2] + 1)) then
+            --shorter path found, update distance
+            grid[curr[1] + v[1]][curr[2] + v[2]][2] = grid[curr[1]][curr[2]][2] + 1
+
+            --update the ancestor node
+            grid[curr[1] + v[1]][curr[2] + v[2]][3][1] = curr[1]
+            grid[curr[1] + v[1]][curr[2] + v[2]][3][2] = curr[2]
+
+            if (curr[1] + v[1] == 0) and (curr[2] + v[2] == -4) then
+              crawl.mpr(curr[1] .. " AND " .. curr[2] .. " OR " .. grid[curr[1]][curr[2]][2])
+            end
+          end
+        --we dont pre-detect walls, but once we find them we can skip some processing
+        else
+          --crawl.mpr(view.feature_at(curr[1]+v[1], curr[2]+v[2]))
+          grid[curr[1] + v[1]][curr[2] + v[2]][1] = "wall"
+        end
+      end
+    end
+    
+    --Set current node to visited
+    grid[curr[1]][curr[2]][1] = "visited"
+
+    --find next current node, could be done more efficiently with a minheap
+    min = 90
+    for i = -6, 6 do
+      for j = -6, 6 do
+        if (grid[i][j][1] == "unvisited") then
+          if (grid[i][j][2] < min) then
+            min = grid[i][j][2]
+            curr[1] = i
+            curr[2] = j
+          end
+        end
+      end
+    end
+
+    --Return once table is filled
+    if (min == 90) then
+      crawl.mpr("success!")
+      for i = -6, 6 do
+        for j = -6, 6 do
+          if (grid[i][j][2] ~= 99) then
+            crawl.mpr(grid[i][j][3][1] .. "+" .. grid[i][j][3][2])
+          end
+        end
+      end
+      return 0
+    end
+  end
+end
+
+--find the shortest path from the current position to (x,y).
+--returns a list of characters corresponding to the quickest direction
+function djikstra(x,y)
+  reset_grid()
+  fill_distances()
+  if (grid[x][y][2] == 99) then
+    crawl.mpr("no path")
+    return -1
+  end
+  while true do
+    crawl.mpr(grid[x][y][3][1])
+    crawl.mpr(grid[x][y][3][2])
+    crawl.mpr(grid[x][y][2])
+    x = grid[x][y][3][1]
+    y = grid[x][y][3][2]
+    if (x == 0) and (y == 0) then
+      return 0
+    end
+  end
 end
 >
