@@ -178,7 +178,7 @@ function ready()
   end
 
   if (cur_goal == "debug") then
-    djikstra(-4,-4)
+    djikstra(-5,-5)
     cur_goal = "debug"
   else
     if (prev_turn == you.turns()) then
@@ -245,4 +245,4 @@ end
 :initialized = 0
 :grid = {}
 :curr = {0,0}
-
+:path = {}
