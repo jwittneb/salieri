@@ -10,7 +10,7 @@
 
 function find(patterns, text)
     local begin, final
-    for i, pattern in ipairs(patterns) do
+    for _, pattern in ipairs(patterns) do
       begin, final = string.find(text, (pattern))
       if begin ~= nil then
         return begin, final
@@ -30,6 +30,9 @@ function is_harmless(mon)
 end
 
 --find all monsters at an exact radius
+--This is used because instead of a simple nested for loop because we often
+--care about the monsters around us by proximity. This code could be made much shorter
+--by sacrificing efficiency
 --options:
 --  "single": returns the coordinate of one monster at this radius, if it exists
 -- "all": sorts monsters in easy, hard, and nasty at given radius
@@ -264,12 +267,12 @@ function find_optimal_chokepoint()
     return -1
   end
 
-  for i,v in ipairs(chokepoints) do
+  for _, value in ipairs(chokepoints) do
     --if the direction of the chokepoint is opposite that of
     --the enemies we are good. Maybe make this smarter so that
     --it returns the closest one as well.
-    if (v[1]*x < 0 and v[2]*y < 0) then
-        return v
+    if (value[1]*x < 0 and value[2]*y < 0) then
+        return value
     end
   end
 

@@ -99,11 +99,11 @@ function detect_items()
     for y = 1, 15 do
       local curPos = items.get_items_at(x-8,y-8)
       if (curPos ~= nil) then
-        for i, v in pairs(curPos) do
+        for _, value in pairs(curPos) do
           temp = {}
           table.insert(temp, 1, x-8)
           table.insert(temp, 2, y-8)
-          table.insert(temp, 3, v)
+          table.insert(temp, 3, value)
           table.insert(flooritems, counter, temp)
 --          crawl.mpr(temp[3].name())
 --          crawl.mpr(tostring(temp[1]))

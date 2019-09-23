@@ -1,8 +1,8 @@
 <
 function reset_grid()
-  for len = -8, 8 do
+  for len = NEG_PATH_LIMIT, PATH_LIMIT do
     grid[len] = {}
-    for wid = -8, 8 do
+    for wid = NEG_PATH_LIMIT, PATH_LIMIT do
         grid[len][wid] = {}
         grid[len][wid][1] = "unvisited"
         grid[len][wid][2] = 99
@@ -18,7 +18,7 @@ function reset_grid()
 end
 
 function fill_distances()
-  -- presumably the path will be in a 17x17 grid with us centered, otherwise probably not worth persuing
+  -- presumably the path will be in a (PATH_LIMIT*2 + 1)x(PATH_LIMIT*2 + 1) grid with us centered, otherwise probably not worth persuing
   -- this will need to be changed when dealing with retreating towrads stairs
 
   directions = {{-1,-1},{-1,0},{-1,1},{0,-1},{0,1},{1,-1},{1,0},{1,1}}
@@ -27,26 +27,28 @@ function fill_distances()
   while true do
 
     --Update the neighbors of the current node
-    for i, v in ipairs(directions) do
-      if (curr[1] + v[1] >= -8) and (curr[1] + v[1] <= 8) and (curr[2] + v[2] >= -8) and (curr[2] + v[2] <= 8) then
-        feat = view.feature_at(curr[1] + v[1], curr[2] + v[2])
+    for _, value in ipairs(directions) do
+      newx = curr[1] + value[1]
+      newy = curr[2] + value[2]
+      if (newx >= NEG_PATH_LIMIT) and (newx <= PATH_LIMIT) and (newy >= NEG_PATH_LIMIT) and (newy <= PATH_LIMIT) then
+        feat = view.feature_at(newx, newy)
         if (travel.feature_traversable(feat)) then
-          if ((grid[curr[1] + v[1]][curr[2] + v[2]][2]) > (grid[curr[1]][curr[2]][2] + 1)) then
+          if ((grid[newx][newy][2]) > (grid[curr[1]][curr[2]][2] + 1)) then
             --shorter path found, update distance
-            grid[curr[1] + v[1]][curr[2] + v[2]][2] = grid[curr[1]][curr[2]][2] + 1
+            grid[newx][newy][2] = grid[curr[1]][curr[2]][2] + 1
 
             --update the ancestor node
-            grid[curr[1] + v[1]][curr[2] + v[2]][3][1] = curr[1]
-            grid[curr[1] + v[1]][curr[2] + v[2]][3][2] = curr[2]
+            grid[curr[1] + value[1]][curr[2] + value[2]][3][1] = curr[1]
+            grid[curr[1] + value[1]][curr[2] + value[2]][3][2] = curr[2]
 
-            if (curr[1] + v[1] == -6) and (curr[2] + v[2] == -4) then
+            if (curr[1] + value[1] == -6) and (curr[2] + value[2] == -4) then
         --      crawl.mpr(curr[1] .. " AND " .. curr[2] .. " OR " .. grid[curr[1]][curr[2]][2])
             end
           end
         --we dont pre-detect walls, but once we find them we can skip some processing
         else
-          --crawl.mpr(view.feature_at(curr[1]+v[1], curr[2]+v[2]))
-          grid[curr[1] + v[1]][curr[2] + v[2]][1] = "wall"
+          --crawl.mpr(view.feature_at(curr[1]+value[1], curr[2]+value[2]))
+          grid[curr[1] + value[1]][curr[2] + value[2]][1] = "wall"
         end
       end
     end
@@ -54,15 +56,19 @@ function fill_distances()
     --Set current node to visited
     grid[curr[1]][curr[2]][1] = "visited"
 
-    --find next current node, could be done more efficiently with a minheap
+    --find next current node, could be theoretically done more efficiently with a minheap maybe, but 
+    --creating a homebrew data structure for such a small set might actually be more computationally
+    --expensive
+    --Maybe when we need to traverse the entire map to find stairs a heap implementation would be
+    --better overall
     min = 90
-    for i = -8, 8 do
-      for j = -8, 8 do
-        if (grid[i][j][1] == "unvisited") then
-          if (grid[i][j][2] < min) then
-            min = grid[i][j][2]
-            curr[1] = i
-            curr[2] = j
+    for posx = NEG_PATH_LIMIT, PATH_LIMIT do
+      for posy = NEG_PATH_LIMIT, PATH_LIMIT do
+        if (grid[posx][posy][1] == "unvisited") then
+          if (grid[posx][posy][2] < min) then
+            min = grid[posx][posy][2]
+            curr[1] = posx
+            curr[2] = posy
           end
         end
       end
@@ -71,9 +77,9 @@ function fill_distances()
     --Return once table is filled
     if (min == 90) then
   --    crawl.mpr("success!")
-      for i = -8, 8 do
-        for j = -8, 8 do
-          if (grid[i][j][2] ~= 99) then
+      for posx = NEG_PATH_LIMIT, PATH_LIMIT do
+        for posy = NEG_PATH_LIMIT, PATH_LIMIT do
+          if (grid[posx][posy][2] ~= 99) then
   --          crawl.mpr(grid[i][j][3][1] .. "+" .. grid[i][j][3][2])
           end
         end
@@ -83,18 +89,40 @@ function fill_distances()
   end
 end
 
-function get_path(x,y)
-  if ((x == 0) and (y == 0)) then
+-- Takes one step in the global path, editting the rest of the path 
+-- so that the path is now relative to the new position
+-- TODO: if a monster is in the path then this will break, fix that
+function path_one_step()
+  local move_matrix = {
+    [-1] = { [-1] = 'y', [0] = 'h', [1] = 'b'},
+    [0]  = { [-1] = 'k',            [1] = 'j'},
+    [1]  = { [-1] = 'u', [0] = 'l', [1] = 'n'},
+  }
+
+  movedir = table.remove(path, 1)
+  dx = movedir[1]
+  dy = movedir[2]
+  magic(move_matrix[dx][dy])
+
+  for _, position in ipairs(path) do
+    position[1] = position[1] + dx
+    position[2] = position[2] + dy
+  end
+end
+
+function get_path(posx, posy)
+  if ((posx == 0) and (posy == 0)) then
     crawl.mpr("Complete!")
     return {0,0}
   else  
-    get_path(grid[x][y][3][1], grid[x][y][3][2])
-    table.insert(path, {grid[x][y][3][1], grid[x][y][3][2]})
+    get_path(grid[posx][posy][3][1], grid[posx][posy][3][2])
+    table.insert(path, {grid[posx][posy][3][1], grid[posx][posy][3][2]})
   end
 end
 
 --find the shortest path from the current position to (x,y).
---returns a list of characters corresponding to the quickest direction
+--returns 0 if there is a path, and mutates the global 'path' to the quickest
+--sequence of coordinates to reach (x,y). Returns -1 if no known path exists to (x,y)
 function djikstra(x,y)
   reset_grid()
   fill_distances()
@@ -105,8 +133,9 @@ function djikstra(x,y)
   else
     get_path(x,y)
   end
-  for i, v in ipairs(path) do
-    crawl.mpr(v[1] .. "+" .. v[2])
+  table.remove(path, 1)
+  for _, value in ipairs(path) do
+    crawl.mpr(value[1] .. "+" .. value[2])
   end
   return 0
 end
