@@ -271,14 +271,14 @@ function find_optimal_chokepoint()
 
   -- no monsters, no need to find a chokepoint
   if (monx == 0 and mony == 0) then
-    return {-1,-1}
+    return {"none"}
   end
 
   chokepoints = find_nearby_chokepoints()
 
   -- no nearby chokepoints
   if (chokepoints == -1) then
-    return -1
+    return {"none"}
   end
 
   for _, value in ipairs(chokepoints[1]) do
@@ -300,6 +300,6 @@ function find_optimal_chokepoint()
   end
 
   --no suitable chokepoints
-  return -2
+  return {"none"}
 end
 >

@@ -100,13 +100,18 @@ function path_one_step()
   }
 
   movedir = table.remove(path, 1)
-  dx = movedir[1]
-  dy = movedir[2]
-  magic(move_matrix[dx][dy])
+  if (movedir ~= nil) then
+    crawl.mpr("good move")
+    dx = movedir[1]
+    dy = movedir[2]
+    magic(move_matrix[dx][dy])
 
-  for _, position in ipairs(path) do
-    position[1] = position[1] + dx
-    position[2] = position[2] + dy
+    for _, position in ipairs(path) do
+      position[1] = position[1] + dx
+      position[2] = position[2] + dy
+    end
+  else
+    crawl.mpr("error: path length was 0")
   end
 end
 

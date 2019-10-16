@@ -172,9 +172,9 @@ function ready()
     initialized = 1
   end
 
-  if (totturns >= 20) then
-    cur_goal = "debug"
-  end
+--  if (totturns >= 20) then
+--    cur_goal = "debug"
+--  end
 
   if (cur_goal == "debug") then
     crawl.mpr(tostring(test[1] + 1) .. tostring(test[2] + 1))
@@ -200,25 +200,46 @@ function ready()
       eat()
     elseif (monx ~= 0 or mony ~= 0) then
       cur_goal = "fight"
-  
---TODO: HERE TO LINE 225 NEEDS TO BE WRITTEN
---      chokepoint finder will also find further away chokepoints than nit could
-      if (cur_danger > DANGER_LIMIT) then
+
+
+-- TODO: chokepoint finder will also find further away chokepoints than it could
+--       it also finds chokepoints that are in opposite direction from monsters, but
+--       require us to walk past monsters to get to
+      if (cur_goal == "path") then
+        if (path[1] ~= nil) then
+          crawl.mpr("taking a step")
+          path_one_step()
+        else
+          cur_goal = "detect"
+        end
+      elseif (cur_danger > DANGER_LIMIT) then
         -- difficult_fight()
-        if (chokepoint[1] == 0 and chokepoint[2] == 0) then
+        if (curr_chokepoint_pos() == 0) then
+          -- we are not in a chokepoint yet
           if (you.status("berserk cooldown")) then
             --yikes, we probably die. Make us teleport or run for the stairs or something
             autoattack()
           elseif (berserk == true) then
-            --we bereserked ourselves or something berserked us, either way we fight
+            --we bereserked ourselves or something berserked us, either way we should probably fight
             autoattack()
-          elseif (curr_chokepoint_position == 0) then
-            --we are not in a chokepoint, we should see if we can get to one
-
           else
-            --we are in a chokepoint, we should berserk maybe? 
-            magic("aa")
+            --we are not in a chokepoint but arent stopped, so we should see if we can get to one
+            if (chokepoint[1] ~= "none") then
+              crawl.mpr("High danger, trying to move to chokepoint" .. tostring(chokepoint[1]+1) .. tostring(chokepoint[2]+1))
+              djikstra(chokepoint[1]+1, chokepoint[2]+1)
+              cur_goal = "path"
+              crawl.mpr("taking first step")
+              path_one_step()
+            else
+              -- no chokepoint nearby
+              autoattack()
+            end
           end
+        elseif (berserk == true) then
+          --we are in a chokepoint, maybe we should berserk if we arent already?
+          magic("aa")
+        else
+          autoattack()
         end
       else
         -- easy_fight()
