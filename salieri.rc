@@ -161,7 +161,7 @@ function ready()
   local cur_danger = detect_danger()
   local chp, mhp = you.hp()
   local berserk = you.berserk()
-  local test = curr_chokepoint_pos()
+  local chokepoint = find_optimal_chokepoint()
 
   crawl.more_autoclear(1)
  
@@ -177,16 +177,16 @@ function ready()
   end
 
   if (cur_goal == "debug") then
-    succ = djikstra(-5,-5)
-    if (succ == 0) then
-      path_one_step()
-    end
+    crawl.mpr(tostring(test[1] + 1) .. tostring(test[2] + 1))
+--    succ = djikstra(-5,-5)
+--    if (succ == 0) then
+--      path_one_step()
+--    end
     cur_goal = "debug"
   else
     if (prev_turn == you.turns()) then
       --crap, we failed to do anything this turn... Hopefully because the floor is done
       non_moves = non_moves + 1
-      crawl.mpr(tostring(non_moves))
     else
       non_moves = 0
     end
@@ -201,13 +201,37 @@ function ready()
     elseif (monx ~= 0 or mony ~= 0) then
       cur_goal = "fight"
   
-      if ((cur_danger > DANGER_LIMIT) and you.status("berserk cooldown")) then
-        autoattack()
-      elseif ((cur_danger > DANGER_LIMIT) and (berserk == false)) then
-        magic("aa")
+--TODO: HERE TO LINE 225 NEEDS TO BE WRITTEN
+--      chokepoint finder will also find further away chokepoints than nit could
+      if (cur_danger > DANGER_LIMIT) then
+        -- difficult_fight()
+        if (chokepoint[1] == 0 and chokepoint[2] == 0) then
+          if (you.status("berserk cooldown")) then
+            --yikes, we probably die. Make us teleport or run for the stairs or something
+            autoattack()
+          elseif (berserk == true) then
+            --we bereserked ourselves or something berserked us, either way we fight
+            autoattack()
+          elseif (curr_chokepoint_position == 0) then
+            --we are not in a chokepoint, we should see if we can get to one
+
+          else
+            --we are in a chokepoint, we should berserk maybe? 
+            magic("aa")
+          end
+        end
       else
+        -- easy_fight()
         autoattack()
       end
+
+--        and you.status("berserk cooldown")) then
+--        autoattack()
+--      elseif ((cur_danger > DANGER_LIMIT) and (berserk == false)) then
+--        magic("aa")
+--      else
+--        autoattack()
+--      end
       --eventually change this to retreat/fight
     elseif (hung <= 1) then
       cur_goal = "eat"
@@ -239,7 +263,7 @@ end
 :DANGER_LIMIT = 2
 
 :totturns = 0
-:cur_goal = "debug"
+:cur_goal = "explore"
 :non_moves = 0
 :prev_danger = 0
 :prev_turn = -1

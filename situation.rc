@@ -165,6 +165,7 @@ end
 function find_nearby_chokepoints()
   horizontal = {}
   vertical = {}
+  local chokepoint_exists = 0
   for x = -7, 5 do
     for y = -7, 5 do      
       -- Take all 3x3 grids (minus bottom-right block) to find vert/horiz chokepoints
@@ -182,15 +183,22 @@ function find_nearby_chokepoints()
       -- vertical chokepoint
       if (is_wall(x1y1) and is_wall(x1y2) and is_wall(x3y1) and is_wall(x3y2) and travel.feature_traversable(x2y1) and travel.feature_traversable(x2y2)) then
         table.insert(vertical, {x,y})
+        chokepoint_exists = 1
         crawl.mpr("vertical: " .. tostring(x) .. "," .. tostring(y))
       end
 
       -- horizontal chokepoint
       if (is_wall(x1y1) and is_wall(x2y1) and is_wall(x1y3) and is_wall(x2y3) and travel.feature_traversable(x1y2) and travel.feature_traversable(x2y2)) then
         table.insert(horizontal, {x,y})
+        chokepoint_exists = 1
         crawl.mpr("horizontal: " .. tostring(x) .. "," .. tostring(y))
       end
     end
+  end
+  if (chokepoint_exists == 1) then
+    return {horizontal, vertical}
+  else
+    return -1
   end
 end
 
@@ -256,22 +264,37 @@ end
 -- This functions is still dumb because it would recognize deep water as part of a chokepoint
 -- even against monsters that can swim (i.e. hydra, crocs)
 function find_optimal_chokepoint()
-  local x, y
+  local monx, mony
   -- figure out what direction the danger is in, that
   -- way we can look for chokepoints in a safer direction
-  x,y = detect_monsters()
-  chokepoints = find_nearby_chokepoints
+  monx, mony = detect_monsters()
+
+  -- no monsters, no need to find a chokepoint
+  if (monx == 0 and mony == 0) then
+    return {-1,-1}
+  end
+
+  chokepoints = find_nearby_chokepoints()
 
   -- no nearby chokepoints
   if (chokepoints == -1) then
     return -1
   end
 
-  for _, value in ipairs(chokepoints) do
+  for _, value in ipairs(chokepoints[1]) do
     --if the direction of the chokepoint is opposite that of
     --the enemies we are good. Maybe make this smarter so that
     --it returns the closest one as well.
-    if (value[1]*x < 0 and value[2]*y < 0) then
+    if (value[1]*monx <= 0 and value[2]*mony <= 0) then
+        return value
+    end
+  end
+
+  for _, value in ipairs(chokepoints[2]) do
+    --if the direction of the chokepoint is opposite that of
+    --the enemies we are good. Maybe make this smarter so that
+    --it returns the closest one as well.
+    if (value[1]*monx <= 0 and value[2]*mony <= 0) then
         return value
     end
   end
