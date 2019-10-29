@@ -177,7 +177,13 @@ function ready()
 --  end
 
   if (cur_goal == "debug") then
-    crawl.mpr(tostring(test[1] + 1) .. tostring(test[2] + 1))
+    if (table.getn(path) > 0) then
+      crawl.mpr("taking a step")
+      path_one_step()
+    else
+      crawl.mpr("reached chokepoint")
+    end
+--    crawl.mpr(tostring(test[1] + 1) .. tostring(test[2] + 1))
 --    succ = djikstra(-5,-5)
 --    if (succ == 0) then
 --      path_one_step()
@@ -227,7 +233,7 @@ function ready()
             if (chokepoint[1] ~= "none") then
               crawl.mpr("High danger, trying to move to chokepoint" .. tostring(chokepoint[1]+1) .. tostring(chokepoint[2]+1))
               djikstra(chokepoint[1]+1, chokepoint[2]+1)
-              cur_goal = "path"
+              cur_goal = "debug"
               crawl.mpr("taking first step")
               path_one_step()
             else

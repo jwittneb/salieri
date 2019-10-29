@@ -21,12 +21,13 @@ function fill_distances()
   -- presumably the path will be in a (PATH_LIMIT*2 + 1)x(PATH_LIMIT*2 + 1) grid with us centered, otherwise probably not worth persuing
   -- this will need to be changed when dealing with retreating towrads stairs
 
+  curr = {0,0}
   directions = {{-1,-1},{-1,0},{-1,1},{0,-1},{0,1},{1,-1},{1,0},{1,1}}
 
-  --just loop until we are done, guaranteed to return eventually 
+  -- Just loop until we are done, guaranteed to return eventually 
   while true do
 
-    --Update the neighbors of the current node
+    -- Update the neighbors of the current node
     for _, value in ipairs(directions) do
       newx = curr[1] + value[1]
       newy = curr[2] + value[2]
@@ -61,6 +62,8 @@ function fill_distances()
     --expensive
     --Maybe when we need to traverse the entire map to find stairs a heap implementation would be
     --better overall
+
+    --90 is just a placeholder value, this value must be sufficiently large so that no path is longer than it
     min = 90
     for posx = NEG_PATH_LIMIT, PATH_LIMIT do
       for posy = NEG_PATH_LIMIT, PATH_LIMIT do
@@ -93,7 +96,7 @@ end
 -- so that the path is now relative to the new position
 -- TODO: if a monster is in the path then this will break, fix that
 function path_one_step()
-  local move_matrix = {
+  move_matrix = {
     [-1] = { [-1] = 'y', [0] = 'h', [1] = 'b'},
     [0]  = { [-1] = 'k',            [1] = 'j'},
     [1]  = { [-1] = 'u', [0] = 'l', [1] = 'n'},
@@ -106,9 +109,11 @@ function path_one_step()
     dy = movedir[2]
     magic(move_matrix[dx][dy])
 
-    for _, position in ipairs(path) do
-      position[1] = position[1] + dx
-      position[2] = position[2] + dy
+    if (table.getn(path) > 0) then
+      for _, position in ipairs(path) do
+        position[1] = position[1] - dx
+        position[2] = position[2] - dy
+      end
     end
   else
     crawl.mpr("error: path length was 0")
