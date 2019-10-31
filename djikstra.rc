@@ -114,6 +114,9 @@ function path_one_step()
         position[1] = position[1] - dx
         position[2] = position[2] - dy
       end
+      for _, value in ipairs(path) do
+        crawl.mpr(value[1] .. "+" .. value[2])
+      end
     end
   else
     crawl.mpr("error: path length was 0")

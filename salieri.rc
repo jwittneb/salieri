@@ -78,6 +78,7 @@ include = djikstra.rc
 #####################################
 
 # situation.rc functions:
+# REQUIRES: djikstra.rc
 
 # is_harmless(mon): returns true if harmless (plant, etc.)
 # detect_monster_radius(rad, option): Find all monsters at an exact radius, option always "single" for now
@@ -161,7 +162,6 @@ function ready()
   local cur_danger = detect_danger()
   local chp, mhp = you.hp()
   local berserk = you.berserk()
-  local chokepoint = find_optimal_chokepoint()
 
   crawl.more_autoclear(1)
  
@@ -190,6 +190,8 @@ function ready()
 --    end
     cur_goal = "debug"
   else
+    local chokepoint = find_optimal_chokepoint()
+
     if (prev_turn == you.turns()) then
       --crap, we failed to do anything this turn... Hopefully because the floor is done
       non_moves = non_moves + 1

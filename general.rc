@@ -64,4 +64,8 @@ function combine(tab1, tab2)
   return tab1
 end
 
+function dist_sort(ele1, ele2)
+  return grid[ele1[1]][ele1[2]][2] < grid[ele2[1]][ele2[2]][2]
+end
+
 >

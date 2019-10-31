@@ -163,8 +163,7 @@ end
 -- X.X
 
 function find_nearby_chokepoints()
-  horizontal = {}
-  vertical = {}
+  chokepoints = {}
   local chokepoint_exists = 0
   for x = -7, 5 do
     for y = -7, 5 do      
@@ -182,21 +181,21 @@ function find_nearby_chokepoints()
 
       -- vertical chokepoint
       if (is_wall(x1y1) and is_wall(x1y2) and is_wall(x3y1) and is_wall(x3y2) and travel.feature_traversable(x2y1) and travel.feature_traversable(x2y2)) then
-        table.insert(vertical, {x,y})
+        table.insert(chokepoints, {x,y,"vert"})
         chokepoint_exists = 1
-        crawl.mpr("vertical: " .. tostring(x) .. "," .. tostring(y))
+      --  crawl.mpr("vertical: " .. tostring(x) .. "," .. tostring(y))
       end
 
       -- horizontal chokepoint
       if (is_wall(x1y1) and is_wall(x2y1) and is_wall(x1y3) and is_wall(x2y3) and travel.feature_traversable(x1y2) and travel.feature_traversable(x2y2)) then
-        table.insert(horizontal, {x,y})
+        table.insert(chokepoints, {x,y,"hori"})
         chokepoint_exists = 1
-        crawl.mpr("horizontal: " .. tostring(x) .. "," .. tostring(y))
+      --  crawl.mpr("horizontal: " .. tostring(x) .. "," .. tostring(y))
       end
     end
   end
   if (chokepoint_exists == 1) then
-    return {horizontal, vertical}
+    return chokepoints
   else
     return -1
   end
@@ -280,20 +279,20 @@ function find_optimal_chokepoint()
   if (chokepoints == -1) then
     return {"none"}
   end
+  
+  -- There are chokepoints, we fill the distances of all points on the grid so that
+  -- we can find the closest suitable chokepoint
+  reset_grid()
+  fill_distances()
+  
+  table.sort(chokepoints, dist_sort)
 
-  for _, value in ipairs(chokepoints[1]) do
-    --if the direction of the chokepoint is opposite that of
-    --the enemies we are good. Maybe make this smarter so that
-    --it returns the closest one as well.
-    if (value[1]*monx <= 0 and value[2]*mony <= 0) then
-        return value
-    end
-  end
+  -- At this point, the chokepoints are sorted based on distance, but we want to 
+  -- make sure we are picking one in a suitable direction. Because of this, we dont
+  -- naively choose the first chokepoint
 
-  for _, value in ipairs(chokepoints[2]) do
-    --if the direction of the chokepoint is opposite that of
-    --the enemies we are good. Maybe make this smarter so that
-    --it returns the closest one as well.
+  for _, value in ipairs(chokepoints) do
+    -- We want the chokepoint to be in the opposite direction of the enemies.
     if (value[1]*monx <= 0 and value[2]*mony <= 0) then
         return value
     end
