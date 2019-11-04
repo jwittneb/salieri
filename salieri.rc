@@ -68,8 +68,24 @@ explore_stop += greedy_pickup
 # length(arr): returns the length of an array
 # find(arr, string): finds if a string is in an arr, (-1,-1) is returned otherwise
 # combine(arr1, arr2): combine two arrays into one
+# dist_sort(ele1, ele2): a comparison function for distances of points on the grid
 
 include = general.rc
+
+################################
+# Path-finding/grid Functions  #
+################################
+
+# djikstra.rc functions:
+
+# reset_grid(): sets all points on the grid to have infinite distance, no paths
+# fill_distances(): finds the min distance to all points on the grid, and the parent of each node
+# path_one_step(): takes one step on the current "path" variable, updating the path so that the
+#                  first step is removed
+# get_path(posx,posy): sets the "path" variable to the path to reach (posx,posy) from current
+#                      position, requires that fill_distances() called beforehand
+# djikstra(posx,posy): wrapper function that uses reset_grid, fill_distances, get_path to set "path"
+#                      to the path to (posx,posy)
 
 include = djikstra.rc
 
@@ -78,12 +94,14 @@ include = djikstra.rc
 #####################################
 
 # situation.rc functions:
-# REQUIRES: djikstra.rc
+# REQUIRES: djikstra.rc, general.rc
 
 # is_harmless(mon): returns true if harmless (plant, etc.)
 # detect_monster_radius(rad, option): Find all monsters at an exact radius, option always "single" for now
 # detect_monsters(): wrapper for detect_monster_radius
 # find_closest_monster(): returns the x and y coordinate of the closest monster, using detect_mmonster_radius()
+# find_optimal_chokepoint(): returns the closest viable chokepoint given the monster locations, or
+#                            {"none"}, if no such chokepoint exists
 
 include = situation.rc
 
@@ -235,7 +253,7 @@ function ready()
             if (chokepoint[1] ~= "none") then
               crawl.mpr("High danger, trying to move to chokepoint" .. tostring(chokepoint[1]+1) .. tostring(chokepoint[2]+1))
               djikstra(chokepoint[1]+1, chokepoint[2]+1)
-              cur_goal = "debug"
+              cur_goal = "path"
               crawl.mpr("taking first step")
               path_one_step()
             else

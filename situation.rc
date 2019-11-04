@@ -285,6 +285,7 @@ function find_optimal_chokepoint()
   reset_grid()
   fill_distances()
   
+  -- sort the chokepoints by the number of steps we are from them
   table.sort(chokepoints, dist_sort)
 
   -- At this point, the chokepoints are sorted based on distance, but we want to 
@@ -294,7 +295,21 @@ function find_optimal_chokepoint()
   for _, value in ipairs(chokepoints) do
     -- We want the chokepoint to be in the opposite direction of the enemies.
     if (value[1]*monx <= 0 and value[2]*mony <= 0) then
+
+      -- This chokepoint is the closest chokepoint in the correct direction, now we need to 
+      -- determine whether it is horizontal or vertical so that we can go to the proper spot.
+      -- Naively returning the value will cause us to always go to the lower spot of a vertical
+      -- chokepoint, and the rightmost spot of a horizontal chokepoint. Thus, we can be lazy and 
+      -- just check if we should go to the left spot of a horizontal/top spot of a vertical
+      -- chokepoint
+
+      if (value[3] == "vert" and mony >= 0) then
+        return {value[1], value[2]-1}
+      elseif (value[3] == "hori" and monx >= 0) then
+        return {value[1]-1, value[2]}
+      else
         return value
+      end
     end
   end
 
